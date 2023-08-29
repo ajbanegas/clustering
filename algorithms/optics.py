@@ -34,15 +34,13 @@ def plot_optics(clf, X):
 	plt.close()
 
 # load dataset
-#df, X = load_dataset(foo='dataset-745-1conf.csv', sample=False)
-df, X = load_dataset(foo='test.csv')
+df, X = load_dataset(foo='dataset-745-1conf.csv', sample=False)
 
 # load the list of queries from DUD-E
 query_list = get_query_list()
 
 # compute the clusters for clustering
-#clf = OPTICS(min_samples=3, max_eps=.9, xi=0.01, n_jobs=-1, metric='cityblock', algorithm='kd_tree', leaf_size=5).fit(X)
-clf = OPTICS(min_samples=3, max_eps=.1, n_jobs=-1, metric='cityblock', algorithm='kd_tree', leaf_size=5).fit(X)
+clf = OPTICS(min_samples=3, max_eps=.9, xi=0.01, n_jobs=-1, metric='cityblock', algorithm='kd_tree', leaf_size=5).fit(X)
 save_model(clf, "models/optics.joblib")
 
 # summarize the number of elements of each cluster

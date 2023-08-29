@@ -27,7 +27,7 @@ def plot_hdbscan(clf, X):
                 Xk = X[clf.labels_ == Class]
                 plt.plot(Xk.iloc[:, 0], Xk.iloc[:, 1], colour, alpha = 0.3)
 
-        plt.plot(X.iloc[clf.labels_ == -1, 0], X.iloc[clf.labels_ == -1, 1], 'k+', alpha = 0.1)
+        #plt.plot(X.iloc[clf.labels_ == -1, 0], X.iloc[clf.labels_ == -1, 1], 'k+', alpha = 0.1)
         plt.title("HDBSCAN")
         plt.tight_layout()
         plt.savefig("images/hdbscan-clusters.png")
@@ -42,7 +42,6 @@ query_list = get_query_list()
 
 # compute the clusters for clustering
 clf = HDBSCAN(min_samples=3, n_jobs=-1, cluster_selection_epsilon=.25, metric='cityblock', algorithm='kdtree', leaf_size=3, store_centers="centroid").fit(X)
-#clf = HDBSCAN(min_samples=3, min_cluster_size=15, n_jobs=-1, store_centers="centroid").fit(X)
 save_model(clf, "models/hdbscan.joblib")
 
 # summarize the number of elements of each cluster
