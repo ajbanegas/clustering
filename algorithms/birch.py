@@ -8,7 +8,7 @@ import sys
 
 
 # https://scicoding.com/diving-deep-into-k-means-clustering-a-scikit-learn-guide/
-NCLUSTERS = 4
+NCLUSTERS = None
 
 
 def plot_birch(clf, df):
@@ -36,17 +36,16 @@ def get_closest_elems(df, l_idx, query):
 
 # load dataset
 sys.setrecursionlimit(1000000)
-df, X = load_dataset(foo='dataset-745-1conf.csv', sample=True)
+df, X = load_dataset(foo='dataset-745-1conf.csv', sample=False)
 
 # determine the ideal number of clusters
 #select_clusters(X, 20)
-#exit()
 
 # load the list of queries from DUD-E
 query_list = get_query_list()
 
 # compute the clusters for clustering
-clf = Birch(n_clusters=NCLUSTERS, branching_factor=5, threshold=0.9).fit(X)
+clf = Birch(n_clusters=NCLUSTERS, branching_factor=50, threshold=0.9).fit(X)
 save_model(clf, "models/birch.joblib")
 
 # summarize the number of elements of each cluster

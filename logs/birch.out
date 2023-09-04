@@ -1,0 +1,167 @@
+               Ae  ALOGP  ALOGP2     AMR  ...   X%    X4v  Xindex  NsOH_
+id                                        ...                           
+DIADB001  171.801  0.000   0.000   0.000  ...  0.0  5.960   0.271   13.0
+DIADB002   71.250  2.119   4.491  82.771  ...  0.0  3.427   0.425    0.0
+DIADB003   57.585  0.000   0.000   0.000  ...  0.0  3.280   0.396    0.0
+DIADB004  100.020  0.000   0.000   0.000  ...  0.0  3.275   0.308    0.0
+DIADB005   72.696  0.000   0.000   0.000  ...  6.5  2.491   0.365    0.0
+
+[5 rows x 745 columns]
+Observations: 1898375
+Variables: 745
+cat_cols: 179
+num_cols: 566
+cat_but_car: 0
+num_but_cat: 179
+Number of samples per cluster: [1 1 1 ... 1 1 1]
+Processing query 1
+Compounds: ['CHEMBL239754']
+
+Processing query 2
+Compounds: ['CHEMBL2141329']
+
+Processing query 3
+Compounds: ['CHEMBL2356926']
+
+Processing query 4
+Compounds: ['CHEMBL2042184']
+
+Processing query 5
+Compounds: ['CHEMBL2375826']
+
+Processing query 6
+Compounds: ['CHEMBL1956497']
+
+Processing query 7
+Compounds: ['CHEMBL220428']
+
+Processing query 8
+Compounds: ['CHEMBL2313795']
+
+Processing query 9
+Compounds: ['CHEMBL3113681']
+
+Processing query 10
+Compounds: ['CHEMBL20345']
+
+Processing query 11
+Compounds: ['CHEMBL2354375']
+
+Processing query 12
+Compounds: ['CHEMBL2064322']
+
+Processing query 13
+Compounds: ['CHEMBL264821']
+
+Processing query 14
+Compounds: ['CHEMBL1200090']
+
+Processing query 15
+Compounds: ['CHEMBL200019']
+
+Processing query 16
+Compounds: ['CHEMBL1958113']
+
+Processing query 17
+Compounds: ['CHEMBL2346686']
+
+Processing query 18
+Compounds: ['CHEMBL270007']
+
+Processing query 19
+Compounds: ['CHEMBL2347172']
+
+Processing query 20
+Compounds: ['CHEMBL3112876']
+
+Processing query 21
+Compounds: ['CHEMBL2012407']
+
+Processing query 22
+Compounds: ['CHEMBL2009286']
+
+Processing query 23
+Compounds: ['CHEMBL2041158']
+
+Processing query 24
+Compounds: ['CHEMBL21867']
+
+Processing query 25
+Compounds: ['CHEMBL2325661']
+
+Processing query 26
+Compounds: ['CHEMBL215131']
+
+Processing query 27
+Compounds: ['CHEMBL2058375']
+
+Processing query 28
+Compounds: ['CHEMBL1927224']
+
+Processing query 29
+Compounds: ['CHEMBL1949734']
+
+Processing query 30
+Compounds: ['CHEMBL2355549']
+
+Processing query 31
+Compounds: ['CHEMBL29820']
+
+Processing query 32
+Compounds: ['CHEMBL255884']
+
+Processing query 33
+Compounds: ['CHEMBL2048720']
+
+Processing query 34
+Compounds: ['CHEMBL2347104']
+
+Processing query 35
+Compounds: ['CHEMBL270007']
+
+Processing query 36
+Compounds: ['CHEMBL2235805']
+
+Processing query 37
+Compounds: ['CHEMBL1950762']
+
+Processing query 38
+Compounds: ['CHEMBL2144517']
+
+Processing query 39
+Compounds: ['CHEMBL3112876']
+
+Processing query 40
+Compounds: ['CHEMBL2262416']
+
+Processing query 41
+Compounds: ['CHEMBL290458']
+
+Processing query 42
+Compounds: ['CHEMBL2042682']
+
+Processing query 43
+Compounds: ['CHEMBL2377151']
+
+Processing query 44
+Compounds: ['CHEMBL2036675']
+
+Processing query 45
+Compounds: ['CHEMBL288845']
+
+Processing query 46
+Compounds: ['CHEMBL2260889']
+
+Processing query 47
+Compounds: ['CHEMBL1813665']
+
+Processing query 48
+Compounds: ['CHEMBL2087265']
+
+Processing query 49
+Compounds: ['CHEMBL2312436']
+
+Processing query 50
+Compounds: ['CHEMBL1258226']
+
+Time: 6.437785387039185 sec
