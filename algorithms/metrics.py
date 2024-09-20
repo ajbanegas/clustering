@@ -23,7 +23,7 @@ def mutual_info(y, yhat):
 	return mutual_info_score(y, yhat)
 
 def recall(y, yhat):
-	return recall_score(y, yhat)
+	return recall_score(y, yhat, average='macro')
 
 def precision(y, yhat):
-	return precision_score(y, yhat)
+	return precision_score(y, yhat, average='macro')
