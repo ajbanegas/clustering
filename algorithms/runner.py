@@ -7,7 +7,7 @@ import time
 
 
 DISTANCE_KEYS = ['manhattan','euclidean','dice','hamming','canberra','chebyshev']
-CLUSTERING_KEYS = ['kmeans','bisecting','agglomerative','dbscan','hdbscan','optics','birch']
+CLUSTERING_KEYS = ['kmeans','bisecting','agglomerative','dbscan','hdbscan','optics','birch','featureagg','minibatch']
 N_CLUSTERS = 3
 
 ds_file = sys.argv[1]
