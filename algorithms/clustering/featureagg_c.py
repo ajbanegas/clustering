@@ -1,6 +1,6 @@
 import numpy as np
-from sklearn.cluster import FeatureAgglomeration
-from common import NELEMS, SEED, get_closest_elems, euclidean_distance
+from sklearn.cluster import FeatureAgglomeration, KMeans
+from common import NELEMS, SEED, get_closest_elems, hamming_distance
 from matplotlib import pyplot as plt
 
 #def plot_dendogram(X):
@@ -27,13 +27,34 @@ def get_classifier(n_clusters, X):
     return FeatureAgglomeration(n_clusters=n_clusters, memory="./tmp", linkage="average", compute_full_tree=True).fit(X)
 
 def classify(clf, df, X, query):
-    # find the closest element
+    # prepare the query compound
     query = np.nan_to_num(query)
-    dist = euclidean_distance(X, query)
-    closest = np.argmin(dist)
-
+    query_reduced = clf.transform(query.reshape(1, -1))
+    
+    # calculate the distance between the query and all the centroids
+    X_reduced = clf.fit_transform(X)
+    
+    # apply KMeans to the reduced space
+    kmeans = KMeans(n_clusters=5, random_state=42)  # Ajustar el número de clusters según sea necesario
+    kmeans.fit(X_reduced)    
+    
+    # collect the centroids from the clusters
+    centroids = kmeans.cluster_centers_
+    
+    # find the closest centroid
+    dist = np.zeros(centroids.shape[0])
+    for i, cent in enumerate(centroids):
+        dist[i] = hamming_distance(cent, query_reduced[0])
+    
+    #dist = euclidean_distance(X, query)
+    closest_centroid_idx  = np.argmin(dist)
+    
+    # obtain the index of the points belonging to the cluster with the closest centroid
+    points_in_closest_cluster = np.where(kmeans.labels_ == closest_centroid_idx)[0]
+    
     # identify the label of the new sample
-    label = clf.labels_[closest]
+    closest_point_idx = points_in_closest_cluster[0]
+    label = clf.labels_[closest_point_idx]
 
     # find the other elements in the cluster
     elems = np.where(label == clf.labels_)[0]

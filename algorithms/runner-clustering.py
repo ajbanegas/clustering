@@ -39,7 +39,7 @@ unique, counts = np.unique(clf.labels_, return_counts=True)
 print(f"Number of samples per cluster: {counts}")
 
 # obtain graphics
-labels = clf.labels_ #if alg_key=='dbscan' else None
+labels = None if alg_key == 'featureagg' else clf.labels_
 data = df.fillna(0.0) if alg_key=='hdbscan' or alg_key=='optics' else X
 plot_clusters(data, labels, alg_key, dataset)
 #plot_clusters(clf, data, alg_key, dataset)

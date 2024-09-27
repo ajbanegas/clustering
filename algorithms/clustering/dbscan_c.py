@@ -47,8 +47,19 @@ def get_classifier(n_clusters, X):
     return DBSCAN(eps=.005, min_samples=3, n_jobs=-1, leaf_size=5).fit(X)
 
 def classify(clf, df, X, query):
+    query = np.nan_to_num(query)
+    
+    # calculate clusters' centroids excluding noise
+    cluster_labels = np.unique(clf.labels_[clf.labels_ != -1])
+    centroids = np.array([X[clf.labels_ == label].mean(axis=0) for label in cluster_labels])
+
+    # calculate the distance between the query and all the centroids
+    dist = np.zeros(centroids.shape[0])
+    for i, cent in enumerate(centroids):
+        dist[i] = hamming_distance(cent, query)
+
     # find the closest element
-    dist = hamming_distance(X[clf.core_sample_indices_], query)
+    #dist = hamming_distance(X[clf.core_sample_indices_], query)
     closest = np.argmin(dist)
 
     # identify the label of the new sample

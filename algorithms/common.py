@@ -129,9 +129,9 @@ def get_closest_elems(df, l_idx, query):
 
 def plot_clusters(X, labels, alg_key, dataset):
     # plot distribution after tSNE algorithm to reduce the dimensionality
-    tsne = TSNE(n_components=3, perplexity=30, n_iter=300, random_state=42)
+    tsne = TSNE(n_components=2, perplexity=30, n_iter=300, random_state=42)
     X_tsne = tsne.fit_transform(X)
-
+    
     plt.scatter(X_tsne[:, 0], X_tsne[:, 1], c=labels, cmap='viridis', s=5)
     plt.xlabel('t-SNE Component 1')
     plt.ylabel('t-SNE Component 2')
@@ -141,6 +141,8 @@ def plot_clusters(X, labels, alg_key, dataset):
     plt.close()
 
     # plot cluster distribution (number of elements per cluster)
+    if labels is None:
+        return
     plt.hist(labels)
     plt.ylabel('Number of items')
     plt.xlabel('Cluster')
