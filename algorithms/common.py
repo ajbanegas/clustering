@@ -3,16 +3,21 @@ import pandas as pd
 from metrics import *
 from eda.EDA import *
 from eda.PreProcessing import *
+from itertools import cycle, islice
 import joblib
 from matplotlib import pyplot as plt
 import matplotlib
-from sklearn.manifold import TSNE
+from sklearn.cluster import KMeans
 from scipy.spatial.distance import hamming
 import pickle
 
 NELEMS = 300
 SEED = 42
 FRAC = 0.05
+N_CLUSTERS = 7
+DISTANCE_KEYS = ['manhattan','euclidean','dice','hamming','canberra','chebyshev']
+CLUSTERING_KEYS = ['kmeans','bisecting','agglomerative','dbscan','hdbscan','optics','birch','minibatch','meanshift']
+
 
 def load_dataset(foo='dataset-745-allconf.csv', outliers=True, fillnan=True, sample=False):
 	df = pd.read_csv(foo, index_col=0)
@@ -71,12 +76,10 @@ def compute_metrics(clf, X, y):
     print()
 
 def save_model(clf, foo, compress_level=3):
-    #joblib.dump(clf, foo, compress=compress_level)
     with open(foo, 'wb') as f:
         pickle.dump(clf, f)
 
 def load_model(foo):
-    #return joblib.load(foo)
     return pickle.load(open(foo, 'rb'))
 
 def plot_inertia(inertials):
@@ -91,19 +94,17 @@ def plot_inertia(inertials):
     plt.ylabel('Inertia')
     plt.savefig('images/kmeans-inertia.png')
 
-def select_clusters(points, loops, max_iterations, init_cluster, tolerance, num_threads):
+def select_clusters(X, init_cluster):
     inertia_clusters = list()
+    loops = 50
+    max_iterations = 10
+    tolerance = .001
+    num_threads = 8
 
     for i in range(1, loops + 1, 1):
-        # Object KMeans
-        from sklearn.cluster import KMeans
-        kmeans = KMeans(n_clusters=i, max_iter=max_iterations, init=init_cluster, tol=tolerance)
-
-        # Calculate Kmeans
-        kmeans.fit(points)
-
-        # Obtain inertia
-        inertia_clusters.append([i, kmeans.inertia_])
+        clf = KMeans(n_clusters=i, max_iter=max_iterations, init=init_cluster, tol=tolerance)
+        clf.fit(X)
+        inertia_clusters.append([i, clf.inertia_])
 
     plot_inertia(inertia_clusters)
 
@@ -122,36 +123,47 @@ def get_closest_elems(df, l_idx, query):
         measure[i] = hamming_distance(df.iloc[idx].to_numpy(), query)
 
     # find the index of the NELEMS closest elements
-    pos = np.argpartition(measure, NELEMS)
+    sorted_idx = np.argsort(measure)
 
     # return the elements
-    return pos
+    return sorted_idx[:NELEMS]
 
 def plot_clusters(X, labels, alg_key, dataset):
-    # plot distribution after tSNE algorithm to reduce the dimensionality
-    tsne = TSNE(n_components=2, perplexity=30, n_iter=300, random_state=42)
-    X_tsne = tsne.fit_transform(X)
-    
-    plt.scatter(X_tsne[:, 0], X_tsne[:, 1], c=labels, cmap='viridis', s=5)
-    plt.xlabel('t-SNE Component 1')
-    plt.ylabel('t-SNE Component 2')
-    plt.title(f't-SNE of {alg_key} with {dataset}')
-    plt.colorbar()
+    if labels is None:
+        return
+
+    y_pred = labels.astype(int)
+
+    colors = np.array(
+        list(
+            islice(
+                cycle(
+                    [
+                        "#377eb8",
+                        "#ff7f00",
+                        "#4daf4a",
+                        "#f781bf",
+                        "#a65628",
+                        "#984ea3",
+                        "#999999",
+                        "#e41a1c",
+                        "#dede00",
+                    ]
+                ),
+                int(max(y_pred) + 1),
+            )
+        )
+    )
+    colors = np.append(colors, ["#000000"])
+
+    plt.scatter(X[:, 35], X[:, 122], s=10, alpha=.4, color=colors[y_pred])
+    plt.title(f'Clusters of {alg_key} with {dataset}')
+    plt.xticks([])
+    plt.yticks([])
+    plt.tight_layout()
     plt.savefig(f'images/{alg_key}-{dataset}.png')
     plt.close()
 
-    # plot cluster distribution (number of elements per cluster)
-    if labels is None:
-        return
-    plt.hist(labels)
-    plt.ylabel('Number of items')
-    plt.xlabel('Cluster')
-    plt.title(f'Distribution of items per cluster: {alg_key} in {dataset}')
-    plt.tight_layout()
-    plt.savefig(f'images/hist-{alg_key}-{dataset}.png')
-    plt.close()
-
-    #yhat = clf.labels_ if hasattr(clf, 'labels_') else clf.predict(X)
 
 """
 https://cdanielaam.medium.com/how-to-compare-and-evaluate-unsupervised-clustering-methods-84f3617e3769
