@@ -21,7 +21,6 @@ if alg_key not in DISTANCE_KEYS and alg_key not in CLUSTERING_KEYS:
 # load dataset
 sys.setrecursionlimit(1000000)
 df, X = load_dataset(foo=ds_file, fillnan=True)
-X = StandardScaler().fit_transform(X)
 
 # load the list of queries
 query_list = get_query_list(q_file)
@@ -58,8 +57,8 @@ elif alg_key in CLUSTERING_KEYS:
     module = import_module(f"clustering.{alg_key}_c")
     X = StandardScaler().fit_transform(X)
 
-    #if alg_key == 'kmeans':
-    #    select_clusters(X, 'k-means++')
+    if alg_key == 'kmeans':
+        select_clusters(X, 'k-means++')
 
     # cluster the database
     time1 = time.time()
