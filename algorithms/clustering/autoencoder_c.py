@@ -65,48 +65,20 @@ def get_classifier(n_clusters, X):
     autoencoder = Autoencoder(input_dim, embedding_dim)
     autoencoder.compile(optimizer='adam', loss='mae') # rmsprop, mse
     history = autoencoder.fit(X, X,
-                              epochs=120,
-                              batch_size=32, # 64
+                              epochs=100,
+                              batch_size=64, # 64
                               shuffle=True,
                               validation_split=0.2,
                               callbacks=[lr_callback, es_callback, mckpt_callback]
                               )
     autoencoder.load_weights(best_model_path)
-    plot_loss('Enamine', history)
+    #plot_loss('Enamine', history)
 
     encoder_model = autoencoder.encoder
     X_embeddings = encoder_model.predict(X)
 
     kmeans = KMeans(n_clusters=n_clusters, random_state=42)
     return kmeans.fit(X_embeddings)
-
-"""
-def classify(clf, df, X, query):
-    # find the closest element
-    query = np.nan_to_num(query)
-    
-    # calculate clusters' centroids excluding noise
-    cluster_labels = np.unique(clf.labels_[clf.labels_ != -1])
-    centroids = np.array([X[clf.labels_ == label].mean(axis=0) for label in cluster_labels])
-
-    # calculate the distance between the query and all the centroids
-    dist = np.zeros(centroids.shape[0])
-    for i, cent in enumerate(centroids):
-        dist[i] = hamming_distance(cent, query)
-        
-    #dist = hamming_distance(X, query)
-    closest = np.argmin(dist)
-
-    # identify the label of the new sample
-    label = clf.labels_[closest]
-
-    # find the other elements in the cluster
-    elems = np.where(label == clf.labels_)[0]
-    if len(elems) > NELEMS:
-        elems = get_closest_elems(df, elems, query)
-
-    return elems
-"""
 
 def classify(clf, df, X, query):
     query = np.nan_to_num(query)

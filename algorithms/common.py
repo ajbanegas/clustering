@@ -16,7 +16,7 @@ SEED = 42
 FRAC = 0.05
 N_CLUSTERS = 7
 DISTANCE_KEYS = ['manhattan','euclidean','dice','hamming','canberra','chebyshev']
-CLUSTERING_KEYS = ['kmeans','bisecting','agglomerative','dbscan','hdbscan','optics','birch','minibatch','meanshift','autoencoder']
+CLUSTERING_KEYS = ['kmeans','bisecting','agglomerative','dbscan','hdbscan','optics','birch','minibatch','meanshift','autoencoder','vae']
 
 
 def load_dataset(foo='dataset-745-allconf.csv', outliers=True, fillnan=True, sample=False):

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-#declare -a arr=("agglomerative" "bisecting" "birch" "dbscan" "meanshift" "hdbscan" "kmeans" "optics" "minibatch")
+#declare -a arr=("agglomerative" "autoencoder" "bisecting" "birch" "dbscan" "meanshift" "hdbscan" "kmeans" "optics" "minibatch" "vae")
 declare -a arr=("canberra" "chebyshev" "dice" "euclidean" "hamming" "manhattan")
 declare -a dataset=("biosynth" "chebi" "chembl" "chemspaceqed" "drugbank" "enamine")
 
