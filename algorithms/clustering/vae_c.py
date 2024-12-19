@@ -6,80 +6,74 @@ from sklearn.decomposition import PCA
 from sklearn.metrics import pairwise_distances
 from common import NELEMS, SEED, get_closest_elems, hamming_distance
 from matplotlib import pyplot as plt
+import umap
 
 LATENT_DIM = 10
 
+class Sampling(layers.Layer):
+    def call(self, inputs):
+        z_mean, z_log_var = inputs
+        batch = tf.shape(z_mean)[0]
+        dim = tf.shape(z_mean)[1]
+        epsilon = tf.random.normal(shape=(batch, dim))  # Sample noise
+        return z_mean + tf.exp(.5 * z_log_var) * epsilon # 0.5
+
 class VAE(tf.keras.Model):
-    def __init__(self, input_dim, latent_dim):
+    def __init__(self, input_dim, latent_dim, kl_weight=0.01):
         super(VAE, self).__init__()
         # Encoder
-        self.encoder = tf.keras.Sequential([
-            layers.InputLayer(input_shape=(input_dim,)),
-            layers.Dense(128, activation='relu', kernel_initializer='zeros'),
-            #layers.BatchNormalization(),
-            #layers.Dense(64, activation='relu', kernel_initializer='zeros'),
-            #layers.BatchNormalization(),
-            layers.Dense(32, activation='relu', kernel_initializer='zeros'),
-            #layers.Dropout(.15),
-            layers.Dense(latent_dim * 2)
-        ])
+        inputs = layers.Input(shape=(input_dim,))
+        x = layers.Dense(128, activation='relu', kernel_initializer='glorot_uniform')(inputs)
+        x = layers.Dense(64, activation='relu', kernel_initializer='glorot_uniform')(x)
+        x = layers.Dense(32, activation='relu', kernel_initializer='glorot_uniform')(x)
+        x = layers.Dense(20, activation='relu', kernel_initializer='glorot_uniform')(x)
+        self.z_mean = layers.Dense(latent_dim, name="z_mean", activation='linear')(x)
+        self.z_log_var = layers.Dense(latent_dim, name="z_log_var", activation='linear')(x)
+        z = Sampling()([self.z_mean, self.z_log_var])
 
         # Decoder
-        self.decoder = tf.keras.Sequential([
-            layers.InputLayer(input_shape=(latent_dim,)),
-            #layers.Dropout(.15),
-            layers.Dense(32, activation='relu', kernel_initializer='zeros'),
-            #layers.BatchNormalization(),
-            #layers.Dense(64, activation='relu', kernel_initializer='zeros'),
-            #layers.BatchNormalization(),
-            layers.Dense(128, activation='relu', kernel_initializer='zeros'),
-            layers.Dense(input_dim, activation='sigmoid')
-        ])
+        latent_inputs = layers.Input(shape=(latent_dim,))
+        x = layers.Dense(20, activation='relu', kernel_initializer='glorot_uniform')(latent_inputs)
+        x = layers.Dense(32, activation='relu', kernel_initializer='glorot_uniform')(x)
+        x = layers.Dense(64, activation='relu', kernel_initializer='glorot_uniform')(x)
+        x = layers.Dense(128, activation='relu', kernel_initializer='glorot_uniform')(x)
+        outputs = layers.Dense(input_dim)(x) # , activation='sigmoid'
+
+        self.encoder = tf.keras.Model(inputs, [self.z_mean, self.z_log_var, z], name="encoder")
+        self.decoder = tf.keras.Model(latent_inputs, outputs, name="decoder")
         self.latent_dim = latent_dim
-
-    def encode(self, x):
-        z_params = self.encoder(x)
-        mu, logvar = tf.split(z_params, num_or_size_splits=2, axis=1)
-        return mu, logvar
-
-    def reparametrize(self, mu, logvar):
-        eps = tf.random.normal(shape=tf.shape(mu))
-        return mu + eps * tf.exp(0.5 * logvar)
-
-    def decode(self, z):
-        return self.decoder(z)
+        self.kl_weight = tf.keras.backend.variable(kl_weight)
 
     def call(self, x):
-        self.mu, self.logvar = self.encode(x)
-        z = self.reparametrize(self.mu, self.logvar)
-        reconstructed = self.decode(z)
-        return reconstructed, self.mu, self.logvar
-
-    #def vae_loss(self, ytrue, ypred, beta = 1.0):
-    #    reconstruction_loss = tf.reduce_mean(tf.square(tf.cast(ytrue, tf.float32) - tf.cast(ypred, tf.float32)), axis=1)
-    #    kl_loss = -0.5 * tf.reduce_sum(1 + self.logvar - tf.square(self.mu) - tf.exp(self.logvar), axis=1)
-    #    return tf.reduce_mean(reconstruction_loss + beta * kl_loss)
+        beta = .001 # .01
+        z_mean, z_log_var, z = self.encoder(x)
+        reconstructed = self.decoder(z)
+        reconstruction_loss = tf.keras.backend.mean(tf.keras.backend.square(x - reconstructed), axis=-1)  # MSE
+        kl_loss = -0.5 * tf.keras.backend.sum(1 + z_log_var - tf.keras.backend.square(z_mean) - tf.keras.backend.exp(z_log_var), axis=-1)  # KL
+        total_loss = tf.keras.backend.mean(reconstruction_loss + beta * kl_loss)
+        self.add_loss(total_loss)
+        return total_loss
 
 def get_classifier(n_clusters, X):
     input_dim = X.shape[1]
     latent_dim = LATENT_DIM
     best_model_path = 'vae.keras'
     batch_size = 128
-    epochs = 80
-    optimizer = tf.keras.optimizers.RMSprop(learning_rate=1e-3)
+    epochs = 500
+    optimizer = tf.keras.optimizers.Adam(learning_rate=1e-3) # 1e-3
 
     lr_callback = tf.keras.callbacks.ReduceLROnPlateau(
         monitor='val_loss',
-        factor=0.01,
-        patience=5,
-        min_lr=0.0001
+        factor=0.25, # .25
+        patience=10, # 10
+        min_lr=1e-7 # 1e-7
     )
 
     es_callback = tf.keras.callbacks.EarlyStopping(
         monitor='val_loss', 
         mode='min', 
         verbose=1, 
-        patience=20,
+        patience=40,
         restore_best_weights=False
     )
 
@@ -91,34 +85,31 @@ def get_classifier(n_clusters, X):
         save_best_only=True
     )
 
-    vae = VAE(input_dim, latent_dim)
-    vae.compile(loss='binary_crossentropy', optimizer=optimizer)
+    vae = VAE(input_dim, latent_dim, kl_weight=0.5) # 0.5
+    vae.compile(optimizer=optimizer)
     history = vae.fit(X, X, 
                       epochs=epochs, 
-                      batch_size=batch_size, 
+                      batch_size=batch_size,
                       validation_split=.2, 
-                      callbacks=[lr_callback, es_callback, mckpt_callback]
+                      callbacks=[es_callback, mckpt_callback, lr_callback] 
             )
     vae.load_weights(best_model_path)
 
     #plot_loss('Enamine', history)
     #plot_latent_space('Enamine', X, vae, n_clusters)
 
-    mu, _ = vae.encode(X)
-    latent_representations = mu.numpy()
-    latent_representations = np.vstack(latent_representations)
-
+    latent_space = vae.encoder.predict(X)[2]
     kmeans = KMeans(n_clusters=n_clusters, random_state=42)
-    return kmeans.fit(latent_representations)
+    return kmeans.fit(latent_space)
 
 def classify(clf, df, X, query):
     query = np.nan_to_num(query)
-    vae = VAE(X.shape[1], LATENT_DIM)
-    mu, _ = vae.encode(X)
-    latent_representation = np.vstack(mu.numpy())
+    vae = VAE(X.shape[1], LATENT_DIM, kl_weight=0.01)
+    latent_space = vae.encoder.predict(X)[2]
+    #latent_representation = np.vstack(mu.numpy())
 
     centroids = clf.cluster_centers_
-    distances = pairwise_distances(latent_representation, centroids, metric='euclidean')
+    distances = pairwise_distances(latent_space, centroids, metric='euclidean')
     closest_cluster = np.argmin(distances, axis=1)
     label = clf.labels_[closest_cluster]
     elems = np.where(label == clf.labels_)[0]
@@ -141,12 +132,17 @@ def plot_loss(dataset, history):
     plt.close()
 
 def plot_latent_space(dataset, X, vae, n_clusters):
-    latent_representations, _ = vae.encode(X)
-    latent_representations = latent_representations.numpy()
+    latent_representations = vae.encoder.predict(X)[2]
 
     pca = PCA(n_components=2)
     original_2d = pca.fit_transform(X)
-    latent_2d = PCA(n_components=2).fit_transform(latent_representations)
+    latent_2d = pca.fit_transform(latent_representations)
+
+    #explained_variance_ratio = pca.explained_variance_ratio_
+    #cumulative_variance = np.cumsum(explained_variance_ratio)
+    #print('Explained Variance Ratio:', explained_variance_ratio)
+    #print('Cumulative Variance:', cumulative_variance)
+
     kmeans = KMeans(n_clusters=n_clusters, random_state=42).fit(latent_representations)
     cluster_labels = kmeans.labels_
 
@@ -170,4 +166,3 @@ def plot_latent_space(dataset, X, vae, n_clusters):
     plt.tight_layout()
     plt.savefig(f"images/space-{dataset}.png")
     plt.close()
-
