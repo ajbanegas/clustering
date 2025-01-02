@@ -20,7 +20,7 @@ def get_classifier(n_clusters, X):
     #clf = OPTICS(min_samples=3, max_eps=.9, xi=0.01, n_jobs=-1, metric='cityblock', algorithm='kd_tree', leaf_size=5).fit(X)
     return OPTICS(min_samples=20, max_eps=100, n_jobs=-1).fit(X)
 
-def classify(clf, df, X, query):
+def classify(clf, df, X, query, dataset=""):
     query = np.nan_to_num(query)
 
     # calculate clusters' centroids excluding noise

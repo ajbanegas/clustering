@@ -1,5 +1,5 @@
 from common import load_dataset, get_query_list, save_items, save_model, compute_metrics, plot_clusters, load_model
-from common import N_CLUSTERS, DISTANCE_KEYS, CLUSTERING_KEYS
+from common import DISTANCE_KEYS, CLUSTERING_KEYS
 from importlib import import_module
 import numpy as np
 from os.path import basename
@@ -50,14 +50,12 @@ for i, query in enumerate(query_list):
     print(f"Processing query {i+1}")
 
     # cluster the dataset
-    elems = module.classify(clf, df, X, query)
+    elems = module.classify(clf, df, X, query, dataset=dataset)
 
     # save compund indexes for later plotting
     path = f"{alg_key}-{dataset.lower()}-{query_id}-{i+1}"
     save_items(f"elements/{path}.txt", elems)
     save_items(f"compounds/{path}.txt", df.iloc[elems].index.to_numpy(), fmt="%s")
-
-    #print(f"Compounds {alg_key} - {dataset}:", df.iloc[elems].index.to_numpy())
 
 time2 = time.time()
 print(f"Inference time {alg_key} - {dataset}: {time2-time1} sec")

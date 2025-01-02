@@ -14,10 +14,10 @@ import pickle
 NELEMS = 300
 SEED = 42
 FRAC = 0.05
-N_CLUSTERS = 7
+#N_CLUSTERS = 3 # 7
 DISTANCE_KEYS = ['manhattan','euclidean','dice','hamming','canberra','chebyshev']
 CLUSTERING_KEYS = ['kmeans','bisecting','agglomerative','dbscan','hdbscan','optics','birch','minibatch','meanshift','autoencoder','vae']
-
+N_CLUSTERS = {'Drugbank':7, 'ChEBI':5, 'ChemSpaceQED':6, 'BioSynth':7, 'ChEMBL':9, 'Enamine':5}
 
 def load_dataset(foo='dataset-745-allconf.csv', outliers=True, fillnan=True, sample=False):
 	df = pd.read_csv(foo, index_col=0)
@@ -82,21 +82,20 @@ def save_model(clf, foo, compress_level=3):
 def load_model(foo):
     return pickle.load(open(foo, 'rb'))
 
-def plot_inertia(inertials):
+def plot_inertia(inertials, dataset):
     x, y = zip(*[inertia for inertia in inertials])
     plt.plot(x, y, 'ro-', markersize=8, lw=2)
     plt.grid(True)
-    font = {'family' : 'normal',
-        #'weight' : 'bold',
-        'size'   : 16}
+    font = {'family': 'normal', 'size': 10}
     matplotlib.rc('font', **font)
+    plt.title(dataset)
     plt.xlabel('Num Clusters')
     plt.ylabel('Inertia')
-    plt.savefig('images/kmeans-inertia.png')
+    plt.savefig(f'images/kmeans-{dataset}-inertia.png')
 
-def select_clusters(X, init_cluster):
+def select_clusters(X, init_cluster, dataset):
     inertia_clusters = list()
-    loops = 50
+    loops = 30
     max_iterations = 10
     tolerance = .001
     num_threads = 8
@@ -106,21 +105,22 @@ def select_clusters(X, init_cluster):
         clf.fit(X)
         inertia_clusters.append([i, clf.inertia_])
 
-    plot_inertia(inertia_clusters)
+    plot_inertia(inertia_clusters, dataset)
 
 def euclidean_distance(x, y):
     dist = (x - y)**2
-    dist = np.sqrt(np.sum(dist, axis=1))
+    dist = np.sqrt(np.sum(dist, axis=0))
     return dist
 
 def hamming_distance(x, y):
     return hamming(x, y)
 
-def get_closest_elems(df, l_idx, query):
+def get_closest_elems(df, l_idx, query, X=None):
     #calculate distance to each element in the cluster
     measure = np.zeros(len(l_idx))
     for i, idx in enumerate(l_idx):
         measure[i] = hamming_distance(df.iloc[idx].to_numpy(), query)
+        #measure[i] = euclidean_distance(df.iloc[idx].to_numpy(), query)
 
     # find the index of the NELEMS closest elements
     sorted_idx = np.argsort(measure)
@@ -133,37 +133,15 @@ def plot_clusters(X, labels, alg_key, dataset):
         return
 
     y_pred = labels.astype(int)
-
-    colors = np.array(
-        list(
-            islice(
-                cycle(
-                    [
-                        "#377eb8",
-                        "#ff7f00",
-                        "#4daf4a",
-                        "#f781bf",
-                        "#a65628",
-                        "#984ea3",
-                        "#999999",
-                        "#e41a1c",
-                        "#dede00",
-                    ]
-                ),
-                int(max(y_pred) + 1),
-            )
-        )
-    )
-    colors = np.append(colors, ["#000000"])
-
-    plt.scatter(X[:, 35], X[:, 122], s=10, alpha=.4, color=colors[y_pred])
+    plt.scatter(X[:, 35], X[:, 122], s=10, alpha=.4, c=[i for i in labels])
+    #plt.scatter(X[labels != -1, 35], X[labels != -1, 122], s=10, alpha=.4, c=[i for i in labels if i != -1])
     plt.title(f'Clusters of {alg_key} with {dataset}')
     plt.xticks([])
     plt.yticks([])
+    plt.colorbar(label="Cluster")
     plt.tight_layout()
     plt.savefig(f'images/{alg_key}-{dataset}.png')
     plt.close()
-
 
 """
 https://cdanielaam.medium.com/how-to-compare-and-evaluate-unsupervised-clustering-methods-84f3617e3769

@@ -15,13 +15,11 @@ def plot(clf, df, labels):
 # load dataset
 #sys.setrecursionlimit(1000000)
 
-def get_classifier(n_clusters, X):
-    n_clusters = None
-    # compute the clusters for clustering
+def get_classifier(n_clusters, X, dataset=""):
     return Birch(n_clusters=n_clusters, branching_factor=200, threshold=1.5).fit(X)
 
 # predict querys to chose N closest elements
-def classify(clf, df, X, query):
+def classify(clf, df, X, query, dataset=""):
     query = np.nan_to_num(query)
     y = clf.predict(query.reshape(1, -1))
 

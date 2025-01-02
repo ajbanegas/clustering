@@ -42,11 +42,23 @@ def plot(clf, X, labels):
 	plt.title("DBSCAN")
 	plt.savefig('images/dbscan-clusters.png')
 
-def get_classifier(n_clusters, X):
-    #return DBSCAN(eps=.005, min_samples=3, n_jobs=-1, metric="precomputed", leaf_size=5).fit(X)
-    return DBSCAN(eps=.005, min_samples=3, n_jobs=-1, leaf_size=5).fit(X)
+def get_classifier(n_clusters, X, dataset=""):
+    dbscan = DBSCAN(eps=.005, min_samples=3, n_jobs=-1, leaf_size=5).fit(X)
 
-def classify(clf, df, X, query):
+    #############################
+    #from sklearn.cluster import KMeans, OPTICS
+    #labels = dbscan.labels_ 
+    #noise_points = X[labels == -1]
+    ##kmeans = KMeans(n_clusters=n_clusters, random_state=42).fit(noise_points)
+    #optics = OPTICS(min_samples=20, max_eps=100, n_jobs=-1).fit(noise_points)
+    #noise_labels = optics.labels_
+    #new_labels = np.copy(labels)
+    #max_label = new_labels.max()
+    #dbscan.labels_[labels == -1] = noise_labels + max_label + 1
+    #############################
+    return dbscan
+
+def classify(clf, df, X, query, dataset=""):
     query = np.nan_to_num(query)
     
     # calculate clusters' centroids excluding noise

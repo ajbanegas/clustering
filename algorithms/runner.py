@@ -58,14 +58,18 @@ elif alg_key in CLUSTERING_KEYS:
     X = StandardScaler().fit_transform(X)
 
     if alg_key == 'kmeans':
-        select_clusters(X, 'k-means++')
+        select_clusters(X, 'k-means++', dataset)
 
     # cluster the database
     time1 = time.time()
-    clf = module.get_classifier(N_CLUSTERS, X)
+    clf = module.get_classifier(N_CLUSTERS[dataset], X, dataset=dataset)
     time2 = time.time()
 
     print(f"Clustering time {alg_key} - {dataset}: {time2-time1} sec")
 
+    print('#### LABELS:', clf.labels_)
+    print('#### UNIQUE LABELS:', np.unique(clf.labels_, return_counts=True))
+
     compress_level = 0 if alg_key == 'birch' else 3
     save_model(clf, f"models/{alg_key}-{dataset}.pkl", compress_level)
+

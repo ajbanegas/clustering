@@ -17,10 +17,10 @@ def plot(clf, X, labels):
     plt.close()
 
 
-def get_classifier(n_clusters, X):
+def get_classifier(n_clusters, X, dataset=""):
     return HDBSCAN(min_samples=10, n_jobs=-1, cluster_selection_epsilon=.25, leaf_size=40, store_centers="centroid").fit(X)
 
-def classify(clf, df, X, query):
+def classify(clf, df, X, query, dataset=""):
     query = np.nan_to_num(query)
 
     # calculate clusters' centroids excluding noise

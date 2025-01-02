@@ -1,5 +1,6 @@
 import numpy as np
 from sklearn.cluster import AgglomerativeClustering
+from sklearn.neighbors import kneighbors_graph
 from common import NELEMS, SEED, get_closest_elems, hamming_distance
 from matplotlib import pyplot as plt
 
@@ -20,14 +21,11 @@ def plot(clf, X, labels):
     plt.close()
 
 # compute the clusters for clustering
-def get_classifier(n_clusters, X):
-    from sklearn.neighbors import kneighbors_graph
+def get_classifier(n_clusters, X, dataset=""):
     connectivity = kneighbors_graph(X, n_neighbors=10, include_self=False)
     return AgglomerativeClustering(n_clusters=n_clusters, connectivity=connectivity).fit(X)
 
-    #return AgglomerativeClustering(n_clusters=n_clusters).fit(X)
-
-def classify(clf, df, X, query):
+def classify(clf, df, X, query, dataset=""):
     # find the closest element
     query = np.nan_to_num(query)
     

@@ -13,10 +13,10 @@ def plot(clf, X, labels):
     plt.savefig('images/minibatch-clusters.png')
     plt.close()
 
-def get_classifier(n_clusters, X):
+def get_classifier(n_clusters, X, dataset=""):
     return MiniBatchKMeans(n_clusters=n_clusters, random_state=SEED).fit(X)
 
-def classify(clf, df, X, query):
+def classify(clf, df, X, query, dataset=""):
     query = np.nan_to_num(query)
     y = clf.predict(query.reshape(1, -1))
 
